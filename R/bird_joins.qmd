@@ -1,5 +1,67 @@
 ---
-title: "bird_joins"
+title: "Bird Joins"
 format: html
 ---
+```{r}
+# load packages
+rm(list = ls())
+library(tidyverse)
+library(here)
+```
+
+## Task 1: Joins on birds
+```{r}
+# read in data sets
+bird_observations <- read_csv(here("data", "52_pp52_birds_1.csv"))
+
+sites <- read_csv(here("data", "52_pp52_sites_1.csv"))
+
+surveys <- read_csv(here("data", "52_pp52_surveys_1.csv"))
+
+taxalist <- read_csv(here("data", "52_pp52_taxalist_1.csv"))
+
+# create subset of bird observations
+birds_subset <- bird_observations %>% 
+  filter(species_id %in% c("BHCO", "RWBL")) %>% 
+  filter(site_id %in% c("LI-W", "NU-C")) 
+```
+
+```{r}
+# left join
+# first left joined dataset becomes first argument!
+birds_left <- left_join(birds_subset, sites, by = "site_id") %>% 
+  left_join(taxalist, by = "species_id")
+
+# full join- will have every column from x and y joined by site_id
+birds_full <- full_join(birds_subset, sites, by = "site_id")
+```
+
+## Task 2: Data wrangling and visualization with birds
+```{r}
+#bird_observations <- bird_observations %>% 
+  # rename column
+  #rename(bird_obs_notes = notes)
+  
+# create subset with all observations
+subset <- bird_observations %>% 
+  # join all dfs
+  full_join(taxalist) %>% 
+  full_join(sites) %>% 
+  full_join(surveys) %>% 
+  # limit columns
+  select(survey_date, common_name, park_name, bird_count) %>% 
+  # add new month column
+  mutate(survey_month = lubridate::month(survey_date)) %>% 
+  # convert month number to a factor
+  mutate(survey_month = as.factor(survey_month)) %>% 
+  # move month column behind date column
+  relocate(survey_month, .after = survey_date)
+
+# find total number of birds observed by park and month
+total_bird <- subset %>% 
+  group_by(park_name, survey_month) %>% 
+  summarize(total = n()) %>% 
+  filter(park_name %in% c("Lindo", "Orme", "Palomino", "Sonrisa"))
+```
+
 
