@@ -26,14 +26,14 @@ alarm_report <- data.frame(
 # practice with strings
 alarm_report <- alarm_report %>%
   # replace Engr with Engineering
-  mutate(building = str_replace(building, pattern = "Engr", replace = "Engineering")) %>% 
+  mutate(building = str_replace(building, pattern = "Engr", replacement = "Engineering")) %>% 
   # separate building into two cols
-  separate(building, into = "wing", sep = "-") %>% 
+  separate(building, into = c("building", "wing"), sep = "-") %>% 
   # keep observations with word "responded"
-  filter(str_detect(pattern = "responded")) %>% 
+  filter(str_detect(alarm_message, pattern = "responded")) %>% 
   # separate message time from rest at --
-  time = separate(time, into = "time", sep = "--") %>% 
+  separate(alarm_message, into = c("time", "message"), sep = "--") %>% 
   # convert date column to Date class
-  lubridate::date(time)
+  mutate(date = lubridate::ymd(date))
 ```
 
